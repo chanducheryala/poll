@@ -32,4 +32,6 @@ public class Participant {
     @OneToMany(mappedBy = "participant")
     List<Vote> votings;
 
+    @OneToMany(mappedBy = "participant")
+    List<ParticipantResult> participantResults;
 }

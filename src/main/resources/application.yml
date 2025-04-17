@@ -6,6 +6,11 @@ spring:
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 10
+      idle-timeout: 30000
+      connection-timeout: 30000
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,7 +18,48 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: votes-consumer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
   logging:
     level:
       org.hibernate.SQL: debug
       org.hibernate.type.descriptor.sql.BasicBinder: trace
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000
+    jedis:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1
+server:
+  tomcat:
+    max-threads: 300
+    min-spare-threads: 50
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+#       include: health,info,metrics
+  metrics:
+    enable:
+      tomcat: true
+      hikaricp: true
+      jvm.gc: true
+
+constants:
+  votes-topic: vote-submitted

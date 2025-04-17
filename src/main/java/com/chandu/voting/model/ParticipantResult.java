@@ -5,29 +5,25 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigInteger;
 import java.util.UUID;
 
 @Entity
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-@Builder
 @Table(
-        name = "voting",
+        name = "participant_result",
         indexes = {
-                @Index(name = "idx_vote_participant_poll", columnList = "participant_id, poll_id")
+                @Index(name = "idx_poll_result_poll_participant", columnList = "poll_id, participant_id")
         }
 )
-public class Vote {
+public class ParticipantResult {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id")
     private UUID id;
-
-    @Column(name = "user_id")
-    private UUID userId;
 
     @ManyToOne
     @JoinColumn(name = "poll_id")
@@ -39,4 +35,9 @@ public class Vote {
     @JsonBackReference
     private Participant participant;
 
+    @Column(name = "votes")
+    private BigInteger votes;
+
+    @Column(name = "percentage")
+    private Double percentage;
 }

@@ -7,7 +7,7 @@ import com.chandu.voting.model.Poll;
 import com.chandu.voting.repository.PollRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +17,6 @@ import java.util.UUID;
 @Slf4j
 @Service
 public class PollServiceImpl implements PollService {
-
 
     private final PollRepository pollRepository;
 

@@ -33,4 +33,9 @@ public class Poll {
     @OneToMany(mappedBy = "poll")
     @JsonManagedReference
     private List<Vote> votings;
+
+
+    @OneToMany(mappedBy = "poll")
+    @JsonManagedReference
+    private List<ParticipantResult> participantResults;
 }
