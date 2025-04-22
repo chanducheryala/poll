@@ -31,6 +31,11 @@ public class PollController {
         return new ResponseEntity<>(pollService.findAll(), HttpStatus.OK);
     }
 
+    @GetMapping("/polls/{pollId}")
+    public ResponseEntity<Poll> findOne(@PathVariable("pollId") UUID pollId) {
+        return new ResponseEntity<>(pollService.findById(pollId).get(), HttpStatus.OK);
+    }
+
     @GetMapping("/polls/result/{pollId}")
     public ResponseEntity<List<PollResultDto>> findPollResultByPollId(@PathVariable("pollId")UUID pollId) {
         return new ResponseEntity<>(pollService.findPollResultByPollId(pollId), HttpStatus.OK);

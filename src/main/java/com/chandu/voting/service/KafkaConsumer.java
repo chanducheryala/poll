@@ -2,6 +2,8 @@ package com.chandu.voting.service;
 
 
 import com.chandu.voting.dto.VoteDto;
+import com.chandu.voting.model.Vote;
+import com.chandu.voting.repository.VoteRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.springframework.data.redis.core.RedisCallback;
@@ -11,19 +13,18 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Slf4j
 @Component
 public class KafkaConsumer {
 
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final ExecutorService executorService;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final VoteService voteService;
 
-    public KafkaConsumer(RedisTemplate<String, Object> redisTemplate) {
+
+    public KafkaConsumer(RedisTemplate<String, String> redisTemplate, VoteService voteService) {
         this.redisTemplate = redisTemplate;
-        this.executorService = Executors.newFixedThreadPool(2);
+        this.voteService = voteService;
     }
 
 
@@ -40,29 +41,28 @@ public class KafkaConsumer {
             });
 
 
-            executorService.submit(() -> {
-                consumer.commitAsync((offsets, exception) -> {
-                    if (exception != null) {
-                        log.error("Commit failed for offsets {}", offsets, exception);
-                    } else {
-                        log.info("Successfully committed offsets {}", offsets);
-                    }
-                });
+            consumer.commitAsync((offsets, exception) -> {
+                if (exception != null) {
+                    log.error("Commit failed for offsets {}", offsets, exception);
+                } else {
+                    log.info("Successfully committed offsets {}", offsets);
+                }
             });
 
-            executorService.submit(() -> {
-                redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
-                    participantWithVotes.forEach((participantId, noOfVotes) -> {
-                        String hashKey = "poll:" + participantWithPoll.get(participantId) + ":votes";
-                        String field = "participant:" + participantId;
-                        log.info("Incrementing votes for key: {}, field: {}, by: {}", hashKey, field, noOfVotes);
-                        connection.hashCommands().hIncrBy(hashKey.getBytes(), field.getBytes(), noOfVotes);
-                    });
-                    return null;
+            redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+                participantWithVotes.forEach((participantId, noOfVotes) -> {
+                    String hashKey = "poll:" + participantWithPoll.get(participantId) + ":votes";
+                    String field = "participant:" + participantId;
+                    log.info("Incrementing votes for key: {}, field: {}, by: {}", hashKey, field, noOfVotes);
+                    connection.hashCommands().hIncrBy(hashKey.getBytes(), field.getBytes(), noOfVotes);
                 });
-
-                log.info("Successfully executed Redis pipelining.");
+                return null;
             });
+
+            List<Vote> votes = voteService.convertToVotes(voteDtos);
+            List<Vote> savedVotes = voteService.bulkInsert(votes);
+            log.info("savedVotes {}", savedVotes.size());
+            log.info("Successfully executed Redis pipelining.");
 
         } catch (Exception ex) {
             log.info("Exception : {}", ex.getStackTrace());

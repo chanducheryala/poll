@@ -3,6 +3,7 @@ package com.chandu.voting.service;
 import com.chandu.voting.dto.PollDto;
 import com.chandu.voting.dto.PollResultDto;
 import com.chandu.voting.model.Poll;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.List;
 import java.util.Optional;

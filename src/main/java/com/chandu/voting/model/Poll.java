@@ -1,7 +1,7 @@
 package com.chandu.voting.model;
 
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,16 +26,16 @@ public class Poll {
     @Column(name = "title")
     private String title;
 
-    @OneToMany(mappedBy = "poll", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @OneToMany(mappedBy = "poll", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Participant> participants;
 
-    @OneToMany(mappedBy = "poll")
-    @JsonManagedReference
+    @OneToMany(mappedBy = "poll", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Vote> votings;
 
 
-    @OneToMany(mappedBy = "poll")
-    @JsonManagedReference
+    @OneToMany(mappedBy = "poll", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<ParticipantResult> participantResults;
 }
