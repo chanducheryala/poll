@@ -6,6 +6,7 @@ import com.chandu.voting.model.Poll;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,5 +18,5 @@ public interface PollService {
 
     List<Poll> findAll();
 
-    List<PollResultDto> findPollResultByPollId(UUID pollId);
+    Map<String, Long>  findPollResultByPollId(UUID pollId);
 }

@@ -2,7 +2,6 @@ package com.chandu.voting.controller;
 
 
 import com.chandu.voting.dto.PollDto;
-import com.chandu.voting.dto.PollResultDto;
 import com.chandu.voting.model.Poll;
 import com.chandu.voting.service.PollService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -37,7 +37,7 @@ public class PollController {
     }
 
     @GetMapping("/polls/result/{pollId}")
-    public ResponseEntity<List<PollResultDto>> findPollResultByPollId(@PathVariable("pollId")UUID pollId) {
+    public ResponseEntity<Map<String, Long>> findPollResultByPollId(@PathVariable("pollId")UUID pollId) {
         return new ResponseEntity<>(pollService.findPollResultByPollId(pollId), HttpStatus.OK);
     }
 }

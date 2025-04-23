@@ -54,6 +54,11 @@ public class KafkaConsumer {
                     String field = "participant:" + participantId;
                     log.info("Incrementing votes for key: {}, field: {}, by: {}", hashKey, field, noOfVotes);
                     connection.hashCommands().hIncrBy(hashKey.getBytes(), field.getBytes(), noOfVotes);
+
+
+                    String zSetKey = "poll:" + participantWithPoll.get(participantId) + ":leaderboard";
+                    String member = "participant:" + participantId;
+                    connection.zIncrBy(zSetKey.getBytes(), noOfVotes.doubleValue(), member.getBytes());
                 });
                 return null;
             });

@@ -10,10 +10,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+
+import java.util.*;
 
 
 @Slf4j
@@ -23,11 +23,13 @@ public class PollServiceImpl implements PollService {
     private final PollRepository pollRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
+    private final ParticipantService participantService;
 
-    public PollServiceImpl(PollRepository pollRepository, RedisTemplate<String, String> redisTemplate, ObjectMapper objectMapper) {
+    public PollServiceImpl(PollRepository pollRepository, RedisTemplate<String, String> redisTemplate, ObjectMapper objectMapper, ParticipantService participantService) {
         this.pollRepository = pollRepository;
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
+        this.participantService = participantService;
     }
 
     @Override
@@ -75,8 +77,28 @@ public class PollServiceImpl implements PollService {
     }
 
     @Override
-    public List<PollResultDto> findPollResultByPollId(UUID pollId) {
-        return pollRepository.findPollResultByPollId(pollId);
+    public Map<String, Long> findPollResultByPollId(UUID pollId) {
+
+        String leaderboardKey = "poll:" + pollId + ":leaderboard";
+
+        Set<ZSetOperations.TypedTuple<String>> topParticipantsWithScores =
+                redisTemplate.opsForZSet().reverseRangeWithScores(leaderboardKey, 0, -1);
+
+        Map<String, Long> scoreBoard = new LinkedHashMap<>(); // LinkedHashMap to maintain order
+
+        if (topParticipantsWithScores != null) {
+            for (ZSetOperations.TypedTuple<String> tuple : topParticipantsWithScores) {
+                String participantKey = tuple.getValue(); // e.g., "participant:456"
+                String participantId = participantKey.replace("participant:", "");
+
+                Participant participant = participantService.findById(UUID.fromString(participantId))
+                        .orElseThrow(() -> new NoSuchElementException("Participant not found!"));
+
+                scoreBoard.put(participant.getName(), tuple.getScore().longValue());
+            }
+        }
+
+        return scoreBoard;
     }
 
 }
