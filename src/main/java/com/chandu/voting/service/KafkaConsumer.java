@@ -3,7 +3,6 @@ package com.chandu.voting.service;
 
 import com.chandu.voting.dto.VoteDto;
 import com.chandu.voting.model.Vote;
-import com.chandu.voting.repository.VoteRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.springframework.data.redis.core.RedisCallback;
@@ -28,7 +27,7 @@ public class KafkaConsumer {
     }
 
 
-    @KafkaListener(topics = "${constants.votes-topic}", groupId = "votes-consumer-group")
+    @KafkaListener(topics = "${constants.votes-topic}", groupId = "votes-consumer-group", containerFactory = "concurrentKafkaListenerContainerFactory")
     public void listen(List<VoteDto> voteDtos, Consumer<String, VoteDto> consumer) {
         try {
             log.info("consumed {} votes ", voteDtos.size());
@@ -60,8 +59,8 @@ public class KafkaConsumer {
             });
 
             List<Vote> votes = voteService.convertToVotes(voteDtos);
+            log.info("no of votes {}", votes.size());
             List<Vote> savedVotes = voteService.bulkInsert(votes);
-            log.info("savedVotes {}", savedVotes.size());
             log.info("Successfully executed Redis pipelining.");
 
         } catch (Exception ex) {

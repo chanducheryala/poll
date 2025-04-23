@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class KafkaConfig {
+public class KafkaProduceConfig {
 
     @Bean
     public ProducerFactory<String, VoteDto> producerFactory() {

@@ -20,6 +20,8 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
   kafka:
     bootstrap-servers: localhost:9092
+    listener:
+      type: batch
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -48,6 +50,7 @@ spring:
         max-idle: 8
         min-idle: 0
         max-wait: -1
+
 server:
   tomcat:
     max-threads: 300
@@ -57,13 +60,20 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"
-#       include: health,info,metrics
+        include: health,info,prometheus
+  endpoint:
+    prometheus:
+      enabled: true
   metrics:
+    export:
+      prometheus:
+        enabled: true
     enable:
       tomcat: true
       hikaricp: true
       jvm.gc: true
+      kafka: true
+      redis: true
 
 constants:
   votes-topic: vote-submitted
