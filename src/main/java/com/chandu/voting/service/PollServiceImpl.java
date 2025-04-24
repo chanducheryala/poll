@@ -84,11 +84,11 @@ public class PollServiceImpl implements PollService {
         Set<ZSetOperations.TypedTuple<String>> topParticipantsWithScores =
                 redisTemplate.opsForZSet().reverseRangeWithScores(leaderboardKey, 0, -1);
 
-        Map<String, Long> scoreBoard = new LinkedHashMap<>(); // LinkedHashMap to maintain order
+        Map<String, Long> scoreBoard = new LinkedHashMap<>();
 
         if (topParticipantsWithScores != null) {
             for (ZSetOperations.TypedTuple<String> tuple : topParticipantsWithScores) {
-                String participantKey = tuple.getValue(); // e.g., "participant:456"
+                String participantKey = tuple.getValue();
                 String participantId = participantKey.replace("participant:", "");
 
                 Participant participant = participantService.findById(UUID.fromString(participantId))
